@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour {
        }
 
        // 마우스 왼쪽 버튼을 눌렀으며 && 최대 점프 횟수 (2)에 도달하지 않았음
+       // 0 마우스 왼쪽, 1 마우스 오른쪽, 3 휠클릭
         if(Input.GetMouseButtonDown(0)&& jumpCount<2){
             //점프횟수증가
             jumpCount++;
@@ -49,18 +50,43 @@ public class PlayerController : MonoBehaviour {
    }
 
    private void Die() {
+       //애니메이터의 Die 트리커 파라미터를 셋
+       animator.SetTrigger("Die");
+
+       // 오디오 소스에 할당된 오디오 클립을 deathClip으로 변경
+       playerAudio.clip = deathClip;
+       //사망 효과음 재생
+       playerAudio.Play();
+
+       //속도를 제로(0,0)으로 변경
+       playerRigidbody.velocity = Vector2.zero;
+       // 사망상태를 true로 변경
+       isDead = true;
        // 사망 처리
    }
 
    private void OnTriggerEnter2D(Collider2D other) {
+       if (other.tag == "Dead" && !isDead)
+       {
+           // 충돌한 상대방의 태그가 Dead이며 아직 사망하지 않았다면 Die() 실행
+           Die();
+       }
        // 트리거 콜라이더를 가진 장애물과의 충돌을 감지
    }
 
    private void OnCollisionEnter2D(Collision2D collision) {
+       if (collision.contacts[0].normal.y > 0.7f)
+       {
+           //isGroundedfmf true로 변경하고, 누적 점프 횟수를 0으로 리셋
+           isGrounded = true;
+           jumpCount = 0;
+       }
        // 바닥에 닿았음을 감지하는 처리
    }
 
    private void OnCollisionExit2D(Collision2D collision) {
+       //어떤 콜라이더에서 떼어진 경우 isGrounded를 false로 변경
+        isGrounded = false;
        // 바닥에서 벗어났음을 감지하는 처리
    }
 }
